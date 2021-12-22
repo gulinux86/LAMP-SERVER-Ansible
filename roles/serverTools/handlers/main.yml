@@ -1,0 +1,17 @@
+---
+# handlers file for serverTools
+  - name: "addInHostsFile" # Add the Hostname and the IP from the servidor in /etc/hosts file
+    lineinfile:
+      path: /etc/hosts
+      line: "{{ item }}"
+    with_items:
+      - "127.0.0.1 {{ hostname }}" 
+      - "{{inventory_hostname}} {{ hostname }}"
+
+  - name: "Restart Server" # Reboot the server after SElinux confugurtion! 
+    reboot:
+
+  - name: "enable yum-utils"
+    shell:
+      cmd: "yum-config-manager --enable remi-php74"
+      when: ansible_facts['os_family'] == 'RedHat' and enable_facts['distribuition_major_version'] == '7'

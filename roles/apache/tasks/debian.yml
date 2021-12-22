@@ -1,0 +1,37 @@
+---
+- name: "Install the apache based in Debian"
+  apt:
+    name: 
+      - apache2
+      - libapache2-mod-fcgid
+      - libapache2-mod-security2
+      - libapache2-mod-evasive
+      - openssl
+    state: latest
+  when: (ansible_facts['os_family'] == "Debian")
+  notify:
+    - enableApache2
+
+- name: "Enable modules apache2 - Debian"
+  apache2_module:
+    name: "{{ item }}"
+  with_items:
+    - actions 
+    - fcgid 
+    - alias 
+    - proxy_fcgi
+    - headers
+    - ssl
+  when: (ansible_facts['os_family'] == "Debian")
+
+- name: "Criate an virtual host with the settings from the site - debian" 
+  template:
+    src: templates/site.conf
+    dest: /etc/apache2/sites-available/{{ log_prefix }}.conf
+  when: (ansible_facts['os_family'] == "Debian")
+  notify:
+    - enableSite
+    - reloadApache2
+    - addInHostsFile
+    - InstallWordPress
+    - SetPermissionWP-Debian

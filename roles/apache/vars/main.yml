@@ -1,0 +1,7 @@
+---
+# vars file for apache
+site_folder: "/var/www/gust_local"
+site_url: "www.gust.local"
+site_domain: "gust.local"
+log_prefix: "gust-local"
+php_version: "7.3"

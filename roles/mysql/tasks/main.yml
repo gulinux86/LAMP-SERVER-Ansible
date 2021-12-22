@@ -1,0 +1,81 @@
+---
+# tasks file for mysql
+
+  - name: "Install Mariadb Server - RedHat"
+    yum:
+      name:
+        - mariadb-server
+        - MySQL-python
+      state: present
+    when: (ansible_facts['os_family'] == "RedHat")
+
+  - name: "Install Mysql Server - Debian"
+    apt:
+      update_cache: yes
+      name:
+        - mariadb-server
+        - software-properties-common 
+        -  gnupg2
+        - python3-pymysql
+        - python3-apt
+      state: present
+    when: (ansible_facts['os_family'] == "Debian")
+
+  - name: "Start Mariadb"
+    service:
+      name: mariadb
+      state: started
+      enabled: yes
+
+  - name: "Creating a database to be used by Wordpress - Debian"
+    mysql_db:
+      login_unix_socket: "/var/run/mysqld/mysqld.sock"
+      name: "{{ db_wp_name}}"
+      state: present
+    when: (ansible_facts['os_family'] == "Debian")
+
+  - name: "Creating a database to be used by Wordpress - RedHat"
+    mysql_db:
+      name: "{{ db_wp_name }}"
+      state: present
+    when: (ansible_facts['os_family'] == "RedHat")
+
+  - name: "Create user with password, all databases privileges in database - Debian"
+    mysql_user:
+      login_unix_socket: "/var/run/mysqld/mysqld.sock"
+      name: "{{ db_wp_username }}"
+      password: "{{ db_wp_password }}"
+      priv: "{{ db_wp_name }}.*:ALL,GRANT"  
+      state: present
+    when: (ansible_facts['os_family'] == "Debian")
+
+  - name: "Create user with password, all databases privileges in database - RedHat"
+    mysql_user:
+      name: "{{ db_wp_username }}"
+      password: "{{ db_wp_password }}"
+      priv: "{{ db_wp_name }}.*:ALL,GRANT"
+      state: present
+    when: (ansible_facts['os_family'] == "RedHat")
+
+  
+  - name: "Removes all anonymous user accounts - Debian"
+    mysql_user:
+      login_unix_socket: "/var/run/mysqld/mysqld.sock"
+      name: ''
+      host_all: yes
+      state: absent
+    when: (ansible_facts['os_family'] == "Debian")
+
+
+  - name: "Removes all anonymous user accounts - RedHat"
+    mysql_user:
+      name: ''
+      host_all: yes
+      state: absent
+    when: (ansible_facts['os_family'] == "RedHat")
+
+
+
+
+
+

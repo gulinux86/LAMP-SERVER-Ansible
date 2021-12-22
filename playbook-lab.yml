@@ -1,0 +1,75 @@
+---
+  - hosts: all
+    become: yes
+    gather_facts: yes
+
+    vars:
+      default_dir: /opt/custom
+      teste: "{{ default_dir }}/script"  
+      dict_dir: {
+        scripts: "{{ default_dir}}/bin",
+        backups: "{{ default_dir }}/backups",
+        log: "{{ default_dir }}/log",
+        temp: "{{ default_dir }}/temp",
+      }
+
+    tasks:
+    - name: "INSTALA PACOTE WGET CENTOS"
+      yum: 
+        update_cache: yes
+        name: "wget"
+        state: present
+      when: (ansible_facts['distribution'] == "CentOS")
+        
+    - name: "INSTALA PACOTE WGET DEBIAN"
+      apt:
+        update_cache: yes
+        name: "wget"
+        state: present  
+      when: (ansible_facts['distribution'] == "Debian") 
+
+
+    - name: "DEFINE O HOSTNAME DOS SERVIDORES"
+      hostname: 
+        name: "{{ host }}"
+
+    - name: "CRIA DIRETÓRIO PADRÃO NOS SERVIDORES"
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: gustavo
+        group: gustavo
+        mode: 0755
+      with_items:
+      - "{{ dict_dir.scripts }}"
+      - "{{ dict_dir.backups }}"
+      - "{{ dict_dir.log}}"
+      - "{{ dict_dir.temp }}"
+
+    - name: "CRIA ARQUIVOS SIMPLES"
+      file:
+        path: "{{ default_dir }}/teste.py"
+        state: touch
+        owner: gustavo
+        group: gustavo
+        mode: 0755
+        modification_time: preserve
+        access_time: preserve
+
+    - name: "exemplo de debug"
+      debug:
+        msg: "{{ dict_dir.scripts }}"
+
+    - name: "EXEMPLO DE REGISTER"
+      shell: "date -u"
+      register: linux_date
+
+    - name: "EXIBINDO REGISTER"
+      debug:
+        msg: "{{ linux_date.start }}"
+
+
+
+
+
+

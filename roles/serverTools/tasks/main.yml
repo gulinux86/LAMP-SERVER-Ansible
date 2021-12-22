@@ -1,0 +1,58 @@
+---
+# tasks file for serverTools
+  - name: "Set a Hostname" ## aciona um Handler para configurar o ip da máquina e o nome no arquivo /etc/hosts 
+    hostname:
+      name: "{{ hostname }}"
+    notify:
+      - addInHostsFile 
+
+  - name: "Role: ServerTools softwares used to admistrate the Debian Server"
+    tags: setup
+    apt:
+      update_cache: yes # atualizando o packet list
+      cache_valid_time: 3600 # 1 hora
+      name:
+        - vim
+        - iftop
+        - zip
+        - wget
+        - curl
+        - python3
+        - nmap
+        - htop
+      state: latest
+    when: (ansible_facts['os_family'] == "Debian")
+
+  - name: "Role: serverTools softwares used to administrate the RedHat Server"
+    tags: setup
+    yum:
+      update_cache: yes # atualizando o packet list
+      name:
+        - vim
+        - zip
+        - wget
+        - curl
+        - python3
+        - nmap
+        - yum-utils
+      state: latest
+    when: (ansible_facts['os_family'] == "RedHat")
+    notify:
+    - enable yum-utils  
+
+  
+  - name: "Allow all the httpd traffic in the CentOS Firewall"
+    firewalld:
+      service: http
+      permanent: yes
+      state: enabled
+    when: (ansible_facts['os_family'] == "RedHat")
+
+  - name: "Disable SElinux in RedHat based Systems" # Existe um Handler configurado para rebootar o servidor após a configuração para desativar o SElinux
+    selinux:
+      state: disabled
+    when: (ansible_facts['os_family'] == "RedHat")
+    notify:
+    - Restart Server
+
+
